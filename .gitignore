@@ -1,2 +1,15 @@
-backend/node_modules/
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# SQLite runtime/database files
+*.db
+*.db-shm
+*.db-wal
+
+# Node dependencies
 node_modules/
+
+# Logs
+*.log
