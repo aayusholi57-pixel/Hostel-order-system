@@ -1,7 +1,11 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.join(__dirname, '..', 'data', 'hotel_order.db');
+const dataDir = path.join(__dirname, '..', 'data');
+fs.mkdirSync(dataDir, { recursive: true });
+
+const dbPath = path.join(dataDir, 'hotel_order.db');
 const db = new Database(dbPath);
 db.pragma('foreign_keys = ON');
 db.pragma('journal_mode = WAL');
@@ -99,7 +103,6 @@ function initDb() {
     CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(user_id, is_read);
   `);
 
-  // Safe schema upgrades for an existing development database.
   addColumnIfMissing('users', 'firebase_uid', 'TEXT');
   addColumnIfMissing('users', 'phone', 'TEXT');
   addColumnIfMissing('users', 'auth_provider', "TEXT NOT NULL DEFAULT 'password'");
