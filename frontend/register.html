@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Create Account | HotelEase</title><link rel="stylesheet" href="css/style.css">
+</head>
+<body data-auth-mode="register">
+<nav class="navbar"><div class="container nav-inner"><a class="brand" href="index.html"><span class="brand-mark">🍴</span> HotelEase</a></div></nav>
+<main class="auth-wrap">
+  <section class="auth-card">
+    <h1>Create your account</h1>
+    <p class="sub">Register with email, Google, or a Nepal phone number.</p>
+
+    <form id="register-form">
+      <div class="form-group"><label>Full Name</label><input class="form-control" name="name" required></div>
+      <div class="form-group"><label>Email</label><input class="form-control" name="email" type="email" required></div>
+      <div class="form-group"><label>Password</label><input class="form-control" name="password" type="password" minlength="6" required></div>
+      <button class="btn btn-primary btn-block" type="submit">Create with Email</button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+    <button id="google-register" class="btn google-btn btn-block" type="button">Sign up with Google</button>
+
+    <div class="auth-divider"><span>or phone</span></div>
+    <div id="phone-name-wrap" class="form-group"><label>Name for phone account</label><input id="phone-name" class="form-control" placeholder="Your full name"></div>
+    <div class="form-group"><label>Nepal Mobile Number</label><input id="phone-number" class="form-control" inputmode="numeric" placeholder="98XXXXXXXX"></div>
+    <div id="phone-code-wrap" class="form-group hidden"><label>Verification Code</label><input id="phone-code" class="form-control" inputmode="numeric" maxlength="6" placeholder="6-digit OTP"></div>
+    <div id="recaptcha-container" style="margin:10px 0"></div>
+    <button id="send-phone-btn" class="btn btn-secondary btn-block" type="button">Send OTP</button>
+    <button id="verify-phone-btn" class="btn btn-primary btn-block hidden" type="button">Verify & Create Account</button>
+
+    <p class="auth-switch">Already registered? <a href="login.html">Login</a></p>
+    <div class="auth-note">For real Google and SMS authentication, complete the Firebase setup described in the project README.</div>
+  </section>
+</main>
+<div id="toast" class="toast"></div>
+<script src="js/app.js"></script>
+<script type="module" src="js/auth.js"></script>
+</body></html>

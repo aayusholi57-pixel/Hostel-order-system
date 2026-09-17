@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard | HotelEase</title><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar"><div class="container nav-inner"><a class="brand" href="index.html"><span class="brand-mark">🍴</span> HotelEase Admin</a><div class="nav-actions"><button id="logout-admin" class="btn btn-secondary btn-sm">Logout</button></div></div></nav>
+<div class="admin-shell"><aside class="sidebar"><a class="active" href="admin.html">Dashboard</a><a href="#orders">Orders</a><a href="#reviews">Reviews</a><a href="#menu">Menu Items</a><a href="index.html">View Website</a></aside><main class="admin-main">
+<div class="page-head" style="padding-top:0"><h1>Dashboard</h1><p>Manage orders, track delivery progress, and review customer feedback.</p></div>
+<section class="admin-cards"><div class="admin-stat"><small>Total Orders</small><strong id="stat-orders">0</strong></div><div class="admin-stat"><small>Revenue</small><strong id="stat-revenue">Rs. 0</strong></div><div class="admin-stat"><small>Menu Items</small><strong id="stat-menu">0</strong></div><div class="admin-stat"><small>Users</small><strong id="stat-users">0</strong></div><div class="admin-stat"><small>Pending</small><strong id="stat-pending">0</strong></div><div class="admin-stat"><small>Delivered</small><strong id="stat-delivered">0</strong></div><div class="admin-stat"><small>Cancelled</small><strong id="stat-cancelled">0</strong></div><div class="admin-stat"><small>Rating</small><strong id="stat-rating">0 ★</strong></div></section>
+<section id="orders"><div class="section-header" style="margin-bottom:15px"><div><h2 style="font-size:1.6rem">Orders</h2><p>When you mark an order as Delivered, the customer receives an in-app delivery notification and can review the order.</p></div></div><div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody id="orders-table"></tbody></table></div></section>
+<section id="reviews" class="section" style="padding-bottom:0"><div class="section-header"><div><h2 style="font-size:1.6rem">Customer Reviews</h2><p>Reviews are accepted only after an order is delivered.</p></div></div><div id="reviews-list"></div></section>
+<section id="menu" class="section" style="padding-bottom:0"><div class="section-header"><div><h2 style="font-size:1.6rem">Menu Management</h2><p>Use the existing menu CRUD API to manage food items from the admin tools.</p></div><a href="menu.html" class="btn btn-secondary">View Menu</a></div></section>
+</main></div>
+<div id="toast" class="toast"></div><script src="js/data.js"></script><script src="js/app.js"></script><script src="js/admin.js"></script>
+</body></html>
