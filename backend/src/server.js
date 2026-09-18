@@ -69,6 +69,34 @@ app.use(
 
 app.use(morgan('dev'));
 
+const authRateBuckets = new Map();
+function authRateLimit(req, res, next) {
+  const key = `${req.ip}:${req.path}`;
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const max = 12;
+  const bucket = authRateBuckets.get(key) || { start: now, count: 0 };
+  if (now - bucket.start > windowMs) {
+    bucket.start = now;
+    bucket.count = 0;
+  }
+  bucket.count += 1;
+  authRateBuckets.set(key, bucket);
+  if (bucket.count > max) {
+    return res.status(429).json({ message: 'Too many authentication attempts. Please try again later.' });
+  }
+  next();
+}
+
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
 
 // ============================================================
 // FRONTEND LOCATION
@@ -291,6 +319,7 @@ app.get(
 
 app.post(
   '/api/auth/register',
+  authRateLimit,
   (req, res) => {
     try {
       const name = String(req.body.name || '').trim().replace(/\s+/g, ' ');
@@ -362,6 +391,7 @@ app.post(
 
 app.post(
   '/api/auth/login',
+  authRateLimit,
   (req, res) => {
 
     try {
@@ -431,6 +461,7 @@ app.post(
 
 app.post(
   '/api/auth/firebase',
+  authRateLimit,
   async (req, res) => {
 
     try {
@@ -451,6 +482,11 @@ app.post(
         String(
           req.body.name || ''
         ).trim();
+
+      const suppliedPhone =
+        String(req.body.phone || '').trim();
+      const suppliedGender =
+        String(req.body.gender || '').trim().toLowerCase();
 
 
       if (!idToken) {
@@ -486,6 +522,7 @@ app.post(
           : null;
 
       const phone =
+        suppliedPhone ||
         decoded.phone_number ||
         null;
 
@@ -543,6 +580,10 @@ app.post(
       }
 
 
+      const gender = ['male', 'female'].includes(suppliedGender)
+        ? suppliedGender
+        : null;
+
       const authProvider =
         provider === 'google.com'
           ? 'google'
@@ -561,6 +602,7 @@ app.post(
           SET
             firebase_uid = ?,
             phone = COALESCE(?, phone),
+            gender = COALESCE(?, gender),
             name = ?,
             auth_provider = ?,
             email =
@@ -574,6 +616,7 @@ app.post(
         ).run(
           firebaseUid,
           phone,
+          gender,
           displayName,
           authProvider,
           email,
@@ -606,6 +649,7 @@ app.post(
               role,
               firebase_uid,
               phone,
+              gender,
               auth_provider
             )
             VALUES
@@ -625,6 +669,7 @@ app.post(
             randomPassword,
             firebaseUid,
             phone,
+            gender,
             authProvider
           );
 
