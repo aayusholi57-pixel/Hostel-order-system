@@ -113,104 +113,33 @@ async function loginWithPassword(event) {
 
     event.preventDefault();
 
-    const form =
-        event.currentTarget;
+    const form = event.currentTarget;
+    const email = String(form.elements.email?.value || '').trim().toLowerCase();
+    const password = String(form.elements.password?.value || '');
 
-    const email =
-        String(
-            form.elements.email?.value || ""
-        )
-        .trim()
-        .toLowerCase();
-
-    const phone = String(form.elements.phone?.value || '').trim();
-    const gender = String(form.elements.gender?.value || '').trim().toLowerCase();
-    const confirmPassword = String(form.elements.confirmPassword?.value || '');
-
-    const password =
-        String(
-            form.elements.password?.value || ""
-        );
-
-    if (!email) {
-
-        toast(
-            "Please enter your email.",
-            "error"
-        );
-
+    if (!email || !password) {
+        toast('Please enter your email and password.', 'error');
         return;
     }
-
-    if (!password) {
-
-        toast(
-            "Please enter your password.",
-            "error"
-        );
-
-        return;
-    }
-
-    console.log(
-        "Email login →",
-        `${API_URL}/auth/login`
-    );
 
     try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
 
-        const response =
-            await fetch(
-                `${API_URL}/auth/login`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        email,
-                        password
-                    })
-                }
-            );
-
-        const data =
-            await response.json();
-
-        console.log(
-            "Login response:",
-            data
-        );
+        const data = await response.json();
 
         if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                "Invalid email or password"
-            );
+            throw new Error(data.message || 'Invalid email or password');
         }
 
         saveLoginSession(data);
-
-        redirectAfterLogin(
-            data.user
-        );
-
+        redirectAfterLogin(data.user);
     } catch (error) {
-
-        console.error(
-            "EMAIL LOGIN ERROR:",
-            error
-        );
-
-        toast(
-            error.message ||
-            "Unable to login.",
-            "error"
-        );
+        console.error('EMAIL LOGIN ERROR:', error);
+        toast(error.message || 'Unable to login.', 'error');
     }
 }
 
@@ -223,124 +152,77 @@ async function registerWithPassword(event) {
 
     event.preventDefault();
 
+    const form = event.currentTarget;
     const submit = document.getElementById('register-submit');
-    if (submit) { submit.disabled = true; submit.textContent = 'Creating account...'; }
 
-    const form =
-        event.currentTarget;
+    const name = String(form.elements.name?.value || '').trim().replace(/\s+/g, ' ');
+    const phone = String(form.elements.phone?.value || '').trim();
+    const gender = String(form.elements.gender?.value || '').trim().toLowerCase();
+    const email = String(form.elements.email?.value || '').trim().toLowerCase();
+    const password = String(form.elements.password?.value || '');
+    const confirmPassword = String(form.elements.confirmPassword?.value || '');
 
-    const name =
-        String(
-            form.elements.name?.value || ""
-        ).trim();
-
-    const email =
-        String(
-            form.elements.email?.value || ""
-        )
-        .trim()
-        .toLowerCase();
-
-    const password =
-        String(
-            form.elements.password?.value || ""
-        );
-
-    if (!name) {
-
-        toast(
-            "Please enter your name.",
-            "error"
-        );
-
+    if (!name || name.length < 2) {
+        toast('Please enter your full name.', 'error');
         return;
     }
 
-    if (!/^(?:\\+977)?9[678]\\d{8}$/.test(phone.replace(/[\\s-]/g, ''))) {
+    if (!/^(?:\+977)?9[678]\d{8}$/.test(phone.replace(/[\s-]/g, ''))) {
         toast('Please enter a valid Nepal mobile number.', 'error');
-        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
         return;
     }
 
     if (!['male', 'female'].includes(gender)) {
         toast('Please select Male or Female.', 'error');
-        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
         return;
     }
 
-    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\\d/.test(password)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast('Please enter a valid email address.', 'error');
+        return;
+    }
+
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
         toast('Password needs 8+ characters, uppercase, lowercase and a number.', 'error');
-        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
         return;
     }
 
     if (password !== confirmPassword) {
         toast('Passwords do not match.', 'error');
-        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
         return;
     }
 
+    if (submit) {
+        submit.disabled = true;
+        submit.textContent = 'Creating account...';
+    }
+
     try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, gender, email, password })
+        });
 
-        const response =
-            await fetch(
-                `${API_URL}/auth/register`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        name,
-                        phone,
-                        gender,
-                        email,
-                        password
-                    })
-                }
-            );
-
-        const data =
-            await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                "Registration failed"
-            );
+            throw new Error(data.message || 'Registration failed');
         }
 
         saveLoginSession(data);
-
-        toast(
-            "Account created successfully."
-        );
+        toast('Account created successfully. You are now logged in.');
 
         setTimeout(() => {
-
-            window.location.href =
-                "index.html";
-
+            window.location.href = 'index.html';
         }, 500);
-
     } catch (error) {
-
-        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
-
-        console.error(
-            "REGISTER ERROR:",
-            error
-        );
-
-        toast(
-            error.message ||
-            "Registration failed.",
-            "error"
-        );
+        console.error('REGISTER ERROR:', error);
+        toast(error.message || 'Registration failed.', 'error');
+        if (submit) {
+            submit.disabled = false;
+            submit.textContent = 'Create Account';
+        }
     }
 }
 
