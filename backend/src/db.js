@@ -109,6 +109,20 @@ function initDb() {
   addColumnIfMissing('users', 'auth_provider', "TEXT NOT NULL DEFAULT 'password'");
 
   db.exec(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TEXT NOT NULL,
+      used_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id);
+    CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON password_reset_tokens(expires_at);
+  `);
+
+  db.exec(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid
       ON users(firebase_uid) WHERE firebase_uid IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone
