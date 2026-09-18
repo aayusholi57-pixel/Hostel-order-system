@@ -105,6 +105,7 @@ function initDb() {
 
   addColumnIfMissing('users', 'firebase_uid', 'TEXT');
   addColumnIfMissing('users', 'phone', 'TEXT');
+  addColumnIfMissing('users', 'gender', 'TEXT');
   addColumnIfMissing('users', 'auth_provider', "TEXT NOT NULL DEFAULT 'password'");
 
   db.exec(`
@@ -112,6 +113,7 @@ function initDb() {
       ON users(firebase_uid) WHERE firebase_uid IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone
       ON users(phone) WHERE phone IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
   `);
 }
 
