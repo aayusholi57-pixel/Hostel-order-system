@@ -274,11 +274,9 @@ async function exchangeFirebaseUser(
         await response.json();
 
     if (!response.ok) {
-
-        throw new Error(
-            data.message ||
-            "Firebase authentication failed"
-        );
+        const error = new Error(data.message || 'Firebase authentication failed');
+        error.code = data.code || '';
+        throw error;
     }
 
     saveLoginSession(data);
@@ -299,22 +297,25 @@ async function handleGoogle() {
         const result = await firebase.loginWithGoogle();
         const firebaseUser = result.user;
 
-        // First-time Google customers still provide the same core profile
-        // information required by email registration.
-        const existing = JSON.parse(localStorage.getItem('hotel_current_user') || 'null');
         let phone = '';
         let gender = '';
 
-        if (pageMode === 'register' && !existing) {
-            phone = window.prompt('Enter your Nepal mobile number (98XXXXXXXX):', '') || '';
-            gender = window.prompt('Enter gender: Male or Female:', '') || '';
+        try {
+            const user = await exchangeFirebaseUser(firebaseUser, firebaseUser.displayName || '', '', '');
+            redirectAfterLogin(user);
+            return;
+        } catch (error) {
+            if (error.code !== 'PROFILE_REQUIRED') throw error;
         }
+
+        phone = window.prompt('Complete your registration: Nepal mobile number (98XXXXXXXX):', '') || '';
+        gender = (window.prompt('Gender: Male or Female:', '') || '').trim().toLowerCase();
 
         const user = await exchangeFirebaseUser(
             firebaseUser,
             firebaseUser.displayName || '',
             phone,
-            gender.toLowerCase()
+            gender
         );
 
         redirectAfterLogin(user);
@@ -322,7 +323,7 @@ async function handleGoogle() {
     } catch (error) {
 
         console.error('GOOGLE LOGIN ERROR:', error);
-        toast(error.message || 'Google login failed. Make sure Firebase Google sign-in and the web app configuration are enabled.', 'error');
+        toast(error.message || 'Google login failed. Check Firebase configuration and authorized domains.', 'error');
     }
 }
 
