@@ -123,6 +123,10 @@ async function loginWithPassword(event) {
         .trim()
         .toLowerCase();
 
+    const phone = String(form.elements.phone?.value || '').trim();
+    const gender = String(form.elements.gender?.value || '').trim().toLowerCase();
+    const confirmPassword = String(form.elements.confirmPassword?.value || '');
+
     const password =
         String(
             form.elements.password?.value || ""
@@ -219,6 +223,9 @@ async function registerWithPassword(event) {
 
     event.preventDefault();
 
+    const submit = document.getElementById('register-submit');
+    if (submit) { submit.disabled = true; submit.textContent = 'Creating account...'; }
+
     const form =
         event.currentTarget;
 
@@ -249,23 +256,27 @@ async function registerWithPassword(event) {
         return;
     }
 
-    if (!email) {
-
-        toast(
-            "Please enter your email.",
-            "error"
-        );
-
+    if (!/^(?:\\+977)?9[678]\\d{8}$/.test(phone.replace(/[\\s-]/g, ''))) {
+        toast('Please enter a valid Nepal mobile number.', 'error');
+        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
         return;
     }
 
-    if (password.length < 6) {
+    if (!['male', 'female'].includes(gender)) {
+        toast('Please select Male or Female.', 'error');
+        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
+        return;
+    }
 
-        toast(
-            "Password must contain at least 6 characters.",
-            "error"
-        );
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\\d/.test(password)) {
+        toast('Password needs 8+ characters, uppercase, lowercase and a number.', 'error');
+        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
+        return;
+    }
 
+    if (password !== confirmPassword) {
+        toast('Passwords do not match.', 'error');
+        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
         return;
     }
 
@@ -284,6 +295,8 @@ async function registerWithPassword(event) {
 
                     body: JSON.stringify({
                         name,
+                        phone,
+                        gender,
                         email,
                         password
                     })
@@ -316,6 +329,8 @@ async function registerWithPassword(event) {
 
     } catch (error) {
 
+        if (submit) { submit.disabled = false; submit.textContent = 'Create Account'; }
+
         console.error(
             "REGISTER ERROR:",
             error
@@ -336,7 +351,9 @@ async function registerWithPassword(event) {
 
 async function exchangeFirebaseUser(
     user,
-    extraName = ""
+    extraName = "",
+    extraPhone = "",
+    extraGender = ""
 ) {
 
     const firebase =
@@ -364,7 +381,9 @@ async function exchangeFirebaseUser(
                     name:
                         extraName ||
                         user.displayName ||
-                        ""
+                        "",
+                    phone: extraPhone || user.phoneNumber || '',
+                    gender: extraGender || ''
                 })
             }
         );
@@ -394,31 +413,34 @@ async function handleGoogle() {
 
     try {
 
-        const firebase =
-            await loadFirebaseAuth();
+        const firebase = await loadFirebaseAuth();
+        const result = await firebase.loginWithGoogle();
+        const firebaseUser = result.user;
 
-        const result =
-            await firebase.loginWithGoogle();
+        // First-time Google customers still provide the same core profile
+        // information required by email registration.
+        const existing = JSON.parse(localStorage.getItem('hotel_current_user') || 'null');
+        let phone = '';
+        let gender = '';
 
-        const user =
-            await exchangeFirebaseUser(
-                result.user
-            );
+        if (pageMode === 'register' && !existing) {
+            phone = window.prompt('Enter your Nepal mobile number (98XXXXXXXX):', '') || '';
+            gender = window.prompt('Enter gender: Male or Female:', '') || '';
+        }
+
+        const user = await exchangeFirebaseUser(
+            firebaseUser,
+            firebaseUser.displayName || '',
+            phone,
+            gender.toLowerCase()
+        );
 
         redirectAfterLogin(user);
 
     } catch (error) {
 
-        console.error(
-            "GOOGLE LOGIN ERROR:",
-            error
-        );
-
-        toast(
-            error.message ||
-            "Google login failed.",
-            "error"
-        );
+        console.error('GOOGLE LOGIN ERROR:', error);
+        toast(error.message || 'Google login failed. Make sure Firebase Google sign-in and the web app configuration are enabled.', 'error');
     }
 }
 
