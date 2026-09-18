@@ -2664,7 +2664,7 @@ function hashResetToken(token) {
 }
 
 function resetPasswordUrl(token) {
-  const base = String(process.env.APP_URL || '').replace(/\\/$/, '');
+  const base = String(process.env.APP_URL || '').replace(/\/$/, '');
   return `${base || `http://localhost:${PORT}`}/reset-password.html?token=${encodeURIComponent(token)}`;
 }
 
