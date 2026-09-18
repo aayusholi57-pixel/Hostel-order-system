@@ -292,121 +292,71 @@ app.get(
 app.post(
   '/api/auth/register',
   (req, res) => {
-
     try {
+      const name = String(req.body.name || '').trim().replace(/\s+/g, ' ');
+      const email = String(req.body.email || '').trim().toLowerCase();
+      const phone = String(req.body.phone || '').trim();
+      const gender = String(req.body.gender || '').trim().toLowerCase();
+      const password = String(req.body.password || '');
 
-      const name =
-        String(
-          req.body.name || ''
-        ).trim();
+      const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const validPhone = /^(?:\+977)?9[678]\d{8}$/.test(phone.replace(/[\s-]/g, ''));
+      const allowedGender = new Set(['male', 'female']);
 
-      const email =
-        String(
-          req.body.email || ''
-        )
-          .trim()
-          .toLowerCase();
-
-      const password =
-        String(
-          req.body.password || ''
-        );
-
-
-      if (
-        !name ||
-        !email ||
-        password.length < 6
-      ) {
-
+      if (!name || name.length < 2 || name.length > 80) {
+        return res.status(400).json({ message: 'Please enter your full name.' });
+      }
+      if (!validEmail) {
+        return res.status(400).json({ message: 'Please enter a valid email address.' });
+      }
+      if (!validPhone) {
+        return res.status(400).json({ message: 'Please enter a valid Nepal mobile number.' });
+      }
+      if (!allowedGender.has(gender)) {
+        return res.status(400).json({ message: 'Please select Male or Female.' });
+      }
+      if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
         return res.status(400).json({
-          message:
-            'Name, valid email, and password of at least 6 characters are required',
+          message: 'Password must be at least 8 characters and include an uppercase letter, lowercase letter, and number.',
         });
-
       }
 
+      const normalizedPhone = phone.replace(/[\s-]/g, '').replace(/^977/, '+977');
 
-      const exists =
-        db
-          .prepare(
-            'SELECT id FROM users WHERE email = ?'
-          )
-          .get(email);
-
+      const exists = db.prepare(
+        'SELECT id, email, phone FROM users WHERE email = ? OR phone = ?'
+      ).get(email, normalizedPhone);
 
       if (exists) {
-
         return res.status(409).json({
-          message:
-            'An account with this email already exists',
+          message: exists.email === email
+            ? 'An account with this email already exists. Please log in.'
+            : 'An account with this phone number already exists. Please log in.',
         });
-
       }
 
+      const result = db.prepare(
+        `
+        INSERT INTO users
+        (name, email, password_hash, role, phone, gender, auth_provider)
+        VALUES (?, ?, ?, 'customer', ?, ?, 'password')
+        `
+      ).run(name, email, hashPassword(password), normalizedPhone, gender);
 
-      const result =
-        db
-          .prepare(
-            `
-            INSERT INTO users
-            (
-              name,
-              email,
-              password_hash,
-              role,
-              auth_provider
-            )
-            VALUES
-            (
-              ?,
-              ?,
-              ?,
-              'customer',
-              'password'
-            )
-            `
-          )
-          .run(
-            name,
-            email,
-            hashPassword(password)
-          );
+      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
+      const token = createToken(user);
 
-
-      const user =
-        db
-          .prepare(
-            'SELECT * FROM users WHERE id = ?'
-          )
-          .get(
-            result.lastInsertRowid
-          );
-
-
-      const token =
-        createToken(user);
-
-
-      res.status(201).json({
-        token,
-        user: normalizeUser(user),
-      });
-
+      res.status(201).json({ token, user: normalizeUser(user) });
     } catch (error) {
-
-      console.error(error);
-
-      res.status(500).json({
-        message:
-          'Registration failed',
-      });
+      console.error('Registration error:', error);
+      if (String(error.code || '').includes('SQLITE_CONSTRAINT')) {
+        return res.status(409).json({ message: 'An account with that email or phone number already exists.' });
+      }
+      res.status(500).json({ message: 'Registration failed. Please try again.' });
     }
   }
 );
 
-
-// ============================================================
 // AUTH - LOGIN
 // ============================================================
 
