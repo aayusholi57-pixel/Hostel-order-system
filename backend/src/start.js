@@ -9,6 +9,24 @@ let capturedApp = null;
 const expressProxy = new Proxy(originalExpress, {
   apply(target, thisArg, args) {
     capturedApp = Reflect.apply(target, thisArg, args);
+    const originalUse = capturedApp.use.bind(capturedApp);
+    const deferredFallbacks = [];
+
+    capturedApp.use = function patchedUse(...useArgs) {
+      const middleware = useArgs[0];
+      const source = typeof middleware === 'function' ? middleware.toString() : '';
+      if (
+        typeof middleware === 'function' &&
+        ((middleware.length === 2 && source.includes('Route not found')) ||
+         (middleware.length === 4 && source.includes('Internal server error')))
+      ) {
+        deferredFallbacks.push(useArgs);
+        capturedApp.__deferredFallbacks = deferredFallbacks;
+        return capturedApp;
+      }
+      return originalUse(...useArgs);
+    };
+
     return capturedApp;
   },
 });
@@ -205,5 +223,9 @@ capturedApp.post('/api/auth/reset-password', (req, res) => {
     return res.status(500).json({ message: 'Unable to reset password.' });
   }
 });
+
+for (const fallback of (capturedApp.__deferredFallbacks || [])) {
+  capturedApp.use(...fallback);
+}
 
 console.log('Password reset routes enabled');
