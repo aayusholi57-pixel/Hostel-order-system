@@ -612,6 +612,13 @@ app.post(
             );
 
 
+      if (!user && authProvider === 'google' && (!phone || !gender)) {
+        return res.status(422).json({
+          code: 'PROFILE_REQUIRED',
+          message: 'Please complete your phone number and gender to finish registration.',
+        });
+      }
+
       if (user) {
 
         db.prepare(
