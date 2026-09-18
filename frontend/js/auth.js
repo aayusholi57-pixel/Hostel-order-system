@@ -384,7 +384,7 @@ async function handleSendPhoneCode() {
         if (!phoneVerifier) {
 
             phoneVerifier =
-                firebase.createPhoneVerifier(
+                await firebase.createPhoneVerifier(
                     "recaptcha-container"
                 );
         }
