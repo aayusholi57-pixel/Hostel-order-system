@@ -459,6 +459,24 @@ app.post(
 // FIREBASE GOOGLE / PHONE LOGIN
 // ============================================================
 
+app.get('/api/auth/firebase-config', (req, res) => {
+  const config = {
+    apiKey: process.env.FIREBASE_WEB_API_KEY || '',
+    authDomain: process.env.FIREBASE_WEB_AUTH_DOMAIN || '',
+    projectId: process.env.FIREBASE_WEB_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || '',
+    storageBucket: process.env.FIREBASE_WEB_STORAGE_BUCKET || '',
+    messagingSenderId: process.env.FIREBASE_WEB_MESSAGING_SENDER_ID || '',
+    appId: process.env.FIREBASE_WEB_APP_ID || '',
+  };
+
+  if (!config.apiKey || !config.projectId || !config.appId) {
+    return res.status(503).json({ message: 'Google/phone authentication is not configured.' });
+  }
+
+  res.setHeader('Cache-Control', 'no-store');
+  return res.json(config);
+});
+
 app.post(
   '/api/auth/firebase',
   authRateLimit,
