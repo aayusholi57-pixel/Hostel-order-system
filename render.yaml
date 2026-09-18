@@ -15,3 +15,7 @@ services:
         value: https://aayusholi57-pixel.github.io
       - key: APP_URL
         value: https://hostel-order-system.onrender.com
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
