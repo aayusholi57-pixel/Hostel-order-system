@@ -8,6 +8,7 @@ function normalizeUser(user) {
     name: user.name,
     email: syntheticPhoneEmail ? null : user.email,
     phone: user.phone || null,
+    gender: user.gender || null,
     authProvider: user.auth_provider || 'password',
     role: user.role,
     createdAt: user.created_at,
