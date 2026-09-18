@@ -13,3 +13,5 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         value: https://aayusholi57-pixel.github.io
+      - key: APP_URL
+        value: https://hostel-order-system.onrender.com
