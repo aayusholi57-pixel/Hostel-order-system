@@ -1,4 +1,4 @@
-const RESET_API = window.API_URL || '/api';
+const RESET_API = window.API_URL || (window.location.hostname.endsWith('.github.io') ? 'https://hostel-order-system.onrender.com/api' : '/api');
 
 function resetMessage(id, text, type = 'success') {
   const el = document.getElementById(id);
