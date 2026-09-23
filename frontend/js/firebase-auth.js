@@ -4,7 +4,11 @@ let googleProvider = null;
 let initialized = false;
 
 async function getApiBase() {
-  return window.location.port === '5500' ? 'http://localhost:8000/api' : '/api';
+  if (typeof window.API_URL === 'string' && window.API_URL) return window.API_URL;
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:8000/api';
+  if (host.endsWith('.github.io')) return 'https://hostel-order-system.onrender.com/api';
+  return '/api';
 }
 
 async function ensureFirebase() {
