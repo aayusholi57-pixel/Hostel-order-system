@@ -39,8 +39,10 @@ initDb();
 // ============================================================
 
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET =
-    'local-development-secret-change-me';
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be configured in production');
+  }
+  process.env.JWT_SECRET = 'local-development-secret-change-me';
 }
 
 
@@ -58,8 +60,27 @@ const PORT =
 // MIDDLEWARE
 // ============================================================
 
-// Allow local frontend / Live Server requests.
-app.use(cors());
+// Allow the deployed GitHub Pages frontend, the Render-hosted frontend,
+// and local development. CORS_ORIGIN may contain comma-separated origins.
+const allowedOrigins = new Set(
+  String(process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
+
+if (allowedOrigins.size === 0) {
+  allowedOrigins.add('http://localhost:5500');
+  allowedOrigins.add('http://127.0.0.1:5500');
+}
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: false,
+}));
 
 app.use(
   express.json({
