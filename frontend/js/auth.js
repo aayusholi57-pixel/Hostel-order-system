@@ -1,3 +1,4 @@
+// API endpoint is resolved for local development, GitHub Pages, and Render.
 // ============================================================
 // HotelEase Authentication
 // Email/password works WITHOUT Firebase.
