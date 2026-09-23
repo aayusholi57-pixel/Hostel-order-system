@@ -1,4 +1,5 @@
-const ADMIN_API_URL = window.location.port === '5500' ? 'http://localhost:8000/api' : '/api';
+// API endpoint is resolved for local development, GitHub Pages, and Render.
+const ADMIN_API_URL = resolveApiUrl();
 let adminOrdersData = [];
 
 async function authFetch(path, options = {}) {
