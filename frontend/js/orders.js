@@ -1,4 +1,5 @@
-const ORDERS_API_URL = window.location.port === '5500' ? 'http://localhost:8000/api' : '/api';
+// API endpoint is resolved for local development, GitHub Pages, and Render.
+const ORDERS_API_URL = resolveApiUrl();
 
 function displayStatus(status) {
   return status === 'Completed' ? 'Delivered' : status;
