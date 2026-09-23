@@ -2,9 +2,9 @@ services:
   - type: web
     name: hostel-order-system
     runtime: node
-    rootDir: backend
-    buildCommand: npm ci && npm run seed
-    startCommand: npm start
+    rootDir: .
+    buildCommand: cd backend && npm ci && npm run seed
+    startCommand: cd backend && npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -12,7 +12,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://aayusholi57-pixel.github.io
+        value: https://aayusholi57-pixel.github.io,https://hostel-order-system.onrender.com
       - key: APP_URL
         value: https://hostel-order-system.onrender.com
       - key: RESEND_API_KEY
