@@ -2,6 +2,7 @@ services:
   - type: web
     name: hostel-order-system
     runtime: node
+    plan: free
     rootDir: .
     buildCommand: cd backend && npm ci && npm run seed
     startCommand: cd backend && npm start
