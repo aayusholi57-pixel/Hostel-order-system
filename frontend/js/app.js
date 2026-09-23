@@ -1,4 +1,18 @@
-const API_URL = window.location.port === '5500' ? 'http://localhost:8000/api' : '/api';
+function resolveApiUrl() {
+  const configured = String(window.HOTEL_API_URL || '').trim().replace(/\/$/, '');
+  if (configured) return configured;
+
+  const host = window.location.hostname;
+  const isLocal = host === 'localhost' || host === '127.0.0.1';
+  if (isLocal) return 'http://localhost:8000/api';
+
+  if (host.endsWith('.github.io')) {
+    return 'https://hostel-order-system.onrender.com/api';
+  }
+
+  return '/api';
+}
+
 
 function getCart() {
   try {
