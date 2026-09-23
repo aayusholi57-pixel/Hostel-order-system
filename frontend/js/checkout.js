@@ -1,4 +1,5 @@
-const CHECKOUT_API_URL = window.location.port === '5500' ? 'http://localhost:8000/api' : '/api';
+// API endpoint is resolved for local development, GitHub Pages, and Render.
+const CHECKOUT_API_URL = resolveApiUrl();
 
 function renderCheckout() {
   const target = document.getElementById('checkout-items');
