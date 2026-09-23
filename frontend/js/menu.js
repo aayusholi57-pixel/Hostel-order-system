@@ -1,4 +1,5 @@
-const MENU_API_URL = window.location.port === '5500' ? 'http://localhost:8000/api' : '/api';
+// API endpoint is resolved for local development, GitHub Pages, and Render.
+const MENU_API_URL = resolveApiUrl();
 
 document.addEventListener('DOMContentLoaded', async () => {
   const filters = document.getElementById('filters');
