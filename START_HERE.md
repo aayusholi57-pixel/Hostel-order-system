@@ -1,42 +1,47 @@
-# HotelEase — Fixed Local Setup
+# HotelEase — Local Development
 
-This version avoids the localhost:5500 CORS problem by serving the frontend directly from the Express backend.
+This project serves the frontend directly from the Express backend, so normal development does not require Live Server.
 
-## 1. Project structure
-
-E:\hotelorder-system\
-  backend\
-  frontend\
-
-## 2. Backend
-
-Open PowerShell in `backend`:
-
+## Quick start
 ```powershell
-npm install
-mkdir data -ErrorAction SilentlyContinue
+cd backend
+npm ci
+Copy-Item .env.example .env
 npm run seed
 npm start
 ```
 
-## 3. Open the app
+Open **http://localhost:8000**.
 
-Use:
+Health check: **http://localhost:8000/api/health**
 
-http://localhost:8000
+Menu API: **http://localhost:8000/api/menu**
 
-Do **not** use Live Server for this version unless you specifically want port 5500.
+## Local demo account
+The development seed creates:
+- Customer: `customer@hotel.com` / `123456`
+- Admin: `admin@hotel.com` / `admin123`
 
-## 4. API checks
+These credentials are development-only and are **not** created when `NODE_ENV=production`.
 
-http://localhost:8000/api/health
-http://localhost:8000/api/menu
+## Production
+Set these environment variables before running the production seed:
+```text
+NODE_ENV=production
+JWT_SECRET=<long-random-secret>
+ADMIN_EMAIL=<admin-email>
+ADMIN_PASSWORD=<strong-admin-password>
+```
 
-## Demo accounts
-
-Customer: customer@hotel.com / 123456
-Admin: admin@hotel.com / admin123
+Do not commit production credentials.
 
 ## Firebase
+Google and Nepal phone OTP require Firebase configuration. See `backend/FIREBASE_SETUP.md`.
 
-Google and Nepal phone OTP still require Firebase configuration. See `backend/FIREBASE_SETUP.md`.
+## Password reset
+Password reset requires:
+```text
+RESEND_API_KEY=<resend-api-key>
+MAIL_FROM=HotelEase <verified-sender@your-domain.com>
+APP_URL=https://your-deployed-app.example
+```
